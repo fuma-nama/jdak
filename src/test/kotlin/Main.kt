@@ -1,4 +1,5 @@
 import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.interactions.DiscordLocale
 import net.sonmoosans.jdak.JDAK
 import net.sonmoosans.jdak.builder.CommandBuilder
 import net.sonmoosans.jdak.builder.group
@@ -13,6 +14,12 @@ fun main() {
         .awaitReady()
 
     JDAK.commands(jda) {
+        usercontext("Test", mapOf(
+            DiscordLocale.CHINESE_TAIWAN to "測試"
+        )) {
+            it.reply("Hello World").queue()
+        }
+
         slashcommand("test", "debug commands") {
             group("beta", "Beta features") {
                 subcommand("kill", "Kill someone") {
