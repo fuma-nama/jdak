@@ -22,11 +22,19 @@ fun OptionsContainer.option(type: OptionType, name: String, description: String)
 )
 
 fun OptionsContainer.int(name: String, description: String) = addOption(
-    TypedCommandOption<Long>(name, description, OptionType.INTEGER)
+    NumberCommandOption<Long>(name, description, OptionType.INTEGER)
+)
+
+fun OptionsContainer.int(name: String, description: String, init: NumberCommandOption<Long>.() -> Unit): TypedCommandOption<Long> = addOption(
+    NumberCommandOption<Long>(name, description, OptionType.INTEGER).apply(init)
 )
 
 fun OptionsContainer.number(name: String, description: String) = addOption(
-    TypedCommandOption<Double>(name, description, OptionType.NUMBER)
+    NumberCommandOption<Double>(name, description, OptionType.NUMBER)
+)
+
+fun OptionsContainer.number(name: String, description: String, init: NumberCommandOption<Double>.() -> Unit): TypedCommandOption<Double> = addOption(
+    NumberCommandOption<Double>(name, description, OptionType.NUMBER).apply(init)
 )
 
 fun OptionsContainer.user(name: String, description: String) = addOption(
@@ -34,7 +42,11 @@ fun OptionsContainer.user(name: String, description: String) = addOption(
 )
 
 fun OptionsContainer.string(name: String, description: String) = addOption(
-    TypedCommandOption<String>(name, description, OptionType.STRING)
+    StringCommandOption<String>(name, description)
+)
+
+fun OptionsContainer.string(name: String, description: String, init: StringCommandOption<String>.() -> Unit): TypedCommandOption<String> = addOption(
+    StringCommandOption<String>(name, description).apply(init)
 )
 
 fun OptionsContainer.role(name: String, description: String) = addOption(
@@ -50,7 +62,11 @@ fun OptionsContainer.mentionable(name: String, description: String) = addOption(
 )
 
 fun OptionsContainer.channel(name: String, description: String) = addOption(
-    TypedCommandOption<Channel>(name, description, OptionType.CHANNEL)
+    ChannelCommandOption<Channel>(name, description)
+)
+
+fun OptionsContainer.channel(name: String, description: String, init: ChannelCommandOption<Channel>.() -> Unit): ChannelCommandOption<Channel> = addOption(
+    ChannelCommandOption<Channel>(name, description).apply(init)
 )
 
 fun OptionsContainer.boolean(name: String, description: String) = addOption(
