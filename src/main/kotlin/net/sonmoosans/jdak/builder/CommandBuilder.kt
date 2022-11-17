@@ -5,6 +5,7 @@ import net.sonmoosans.jdak.command.SlashCommand
 import net.sonmoosans.jdak.command.SubCommand
 import net.sonmoosans.jdak.command.SubCommandGroup
 
+@Target(AnnotationTarget.CLASS, AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.TYPE)
 @DslMarker
 annotation class CommandDsl
 
