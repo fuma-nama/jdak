@@ -1,6 +1,7 @@
 package net.sonmoosans.jdak.command
 
 import net.dv8tion.jda.api.interactions.DiscordLocale
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData
@@ -57,14 +58,22 @@ data class SlashCommand(
 ): CommandNode(), ApplicationCommand, CommandGroup {
     override val subcommands = arrayListOf<SubCommand>()
     val subcommandGroups = arrayListOf<SubCommandGroup>()
+    override var guildOnly: Boolean = false
+    override var permissions: DefaultMemberPermissions? = null
 
     override fun build(): CommandData {
         return CommandDataImpl(name, description)
+            .setGuildOnly(guildOnly)
             .setNameLocalizations(nameLocale?: mapOf())
             .setDescriptionLocalizations(descriptionLocale?: mapOf())
             .addOptions(options.map { it.build() })
             .addSubcommands(subcommands.map { it.build() })
             .addSubcommandGroups(subcommandGroups.map { it.build() })
+            .also { command ->
+                permissions?.let {
+                    command.defaultPermissions = it
+                }
+            }
     }
 
     fun buildHandler(chunk: CommandHandlerChunk) {

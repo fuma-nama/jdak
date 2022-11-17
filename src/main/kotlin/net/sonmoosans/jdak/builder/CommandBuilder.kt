@@ -3,6 +3,7 @@ package net.sonmoosans.jdak.builder
 import net.dv8tion.jda.api.events.interaction.command.MessageContextInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent
 import net.dv8tion.jda.api.interactions.DiscordLocale
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.sonmoosans.jdak.command.*
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.TYPE)
@@ -22,18 +23,47 @@ class CommandBuilder {
         return command
     }
 
-    fun messagecontext(name: String, nameLocalizations: Map<DiscordLocale, String>? = null, handler: (MessageContextInteractionEvent) -> Unit): MessageContextCommand {
+    fun messagecommand(
+        name: String,
+        nameLocalizations: Map<DiscordLocale, String>? = null,
+        guildOnly: Boolean = false,
+        permissions: DefaultMemberPermissions? = null,
+        handler: (MessageContextInteractionEvent) -> Unit
+    ): MessageContextCommand {
         val command = MessageContextCommand(name)
         command.nameLocalizations = nameLocalizations
+        command.guildOnly = guildOnly
+        command.permissions = permissions
         command.onEvent(handler)
 
         messageCommands += command
         return command
     }
 
-    fun usercontext(name: String, nameLocalizations: Map<DiscordLocale, String>? = null, handler: (UserContextInteractionEvent) -> Unit): UserContextCommand {
+    fun messagecontext(name: String, init: MessageContextCommand.() -> Unit): MessageContextCommand {
+        val command = MessageContextCommand(name).apply(init)
+
+        messageCommands += command
+        return command
+    }
+
+    fun usercontext(name: String, init: UserContextCommand.() -> Unit): UserContextCommand {
+        val command = UserContextCommand(name).apply(init)
+
+        userCommands += command
+        return command
+    }
+
+    fun usercommand(
+        name: String,
+        nameLocalizations: Map<DiscordLocale, String>? = null,
+        guildOnly: Boolean = false,
+        permissions: DefaultMemberPermissions? = null,
+        handler: (UserContextInteractionEvent) -> Unit): UserContextCommand {
         val command = UserContextCommand(name)
         command.nameLocalizations = nameLocalizations
+        command.guildOnly = guildOnly
+        command.permissions = permissions
         command.onEvent(handler)
 
         userCommands += command

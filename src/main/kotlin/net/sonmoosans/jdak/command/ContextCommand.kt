@@ -4,14 +4,23 @@ import net.dv8tion.jda.api.events.interaction.command.MessageContextInteractionE
 import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent
 import net.dv8tion.jda.api.interactions.DiscordLocale
 import net.dv8tion.jda.api.interactions.commands.Command
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.internal.interactions.CommandDataImpl
 
 sealed class ContextCommand(val name: String, val type: Command.Type): ApplicationCommand {
     var nameLocalizations: Map<DiscordLocale, String>? = null
+    override var guildOnly: Boolean = false
+    override var permissions: DefaultMemberPermissions? = null
 
     override fun build(): CommandData {
         val command =  CommandDataImpl(type, name)
+            .setGuildOnly(guildOnly)
+
+        permissions?.let {
+            command.setDefaultPermissions(it)
+        }
+
         nameLocalizations?.let {
             command.setNameLocalizations(it)
         }
