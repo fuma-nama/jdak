@@ -1,6 +1,22 @@
 # JDAK - JDA Command Framework in Kotlin
-Light-Weight, Fast, Flexible, Functional Programming Command framework for [JDA](https://github.com/DV8FromTheWorld/JDA) written in **Kotlin**
-
+A Light-Weight, Fast, Flexible, Functional Programming Command framework for [JDA](https://github.com/DV8FromTheWorld/JDA) written in **Kotlin**
+## Installation
+Maven
+```xml
+<dependency>
+    <groupId>io.github.sonmoosans</groupId>
+    <artifactId>jdak</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+Gradle
+```
+implementation 'io.github.sonmoosans:jdak:1.0.0'
+```
+Gradle Kotlin
+```kotlin
+implementation("io.github.sonmoosans:jdak:1.0.0")
+```
 ## Getting Started
 ```kotlin
 val jda = JDABuilder.createDefault(System.getenv("TOKEN"))
