@@ -38,6 +38,9 @@ fun main() {
         }
 
         slashcommand("test", "debug commands") {
+            nameLocale = mapOf(
+                DiscordLocale.CHINESE_TAIWAN to "測試"
+            )
             guildOnly = true
 
             group("beta", "Beta features") {
