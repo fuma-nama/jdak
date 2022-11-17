@@ -9,12 +9,20 @@ object JDAK {
         val builder = CommandBuilder().apply(init)
         val listener = CommandListener()
 
-        for (slashcommand in builder.slashcommands) {
-            slashcommand.buildHandler(listener.handlers)
+        for (command in builder.slashcommands) {
+            command.buildHandler(listener.slash)
+        }
+        for (command in builder.userCommands) {
+            listener.users[command.name] = command.handler
+        }
+        for (command in builder.messageCommands) {
+            listener.messages[command.name] = command.handler
         }
 
         jda.updateCommands()
             .addCommands(builder.slashcommands.map { it.build() })
+            .addCommands(builder.userCommands.map { it.build() })
+            .addCommands(builder.messageCommands.map { it.build() })
             .queue()
         jda.addEventListener(listener)
     }
