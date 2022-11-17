@@ -1,5 +1,6 @@
 package net.sonmoosans.jdak.command
 
+import net.dv8tion.jda.api.interactions.DiscordLocale
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData
@@ -17,6 +18,8 @@ interface CommandGroup {
 
 @CommandDsl
 open class CommandNode: OptionsContainer {
+    var nameLocale: Map<DiscordLocale, String>? = null
+    var descriptionLocale: Map<DiscordLocale, String>? = null
     override val options = arrayListOf<CommandOption>()
 
     var handler: CommandHandler? = null
@@ -57,6 +60,8 @@ data class SlashCommand(
 
     override fun build(): CommandData {
         return CommandDataImpl(name, description)
+            .setNameLocalizations(nameLocale?: mapOf())
+            .setDescriptionLocalizations(descriptionLocale?: mapOf())
             .addOptions(options.map { it.build() })
             .addSubcommands(subcommands.map { it.build() })
             .addSubcommandGroups(subcommandGroups.map { it.build() })
@@ -83,10 +88,14 @@ data class SubCommandGroup(
     val description: String
 ): CommandGroup {
     override val subcommands = arrayListOf<SubCommand>()
+    var nameLocale: Map<DiscordLocale, String>? = null
+    var descriptionLocale: Map<DiscordLocale, String>? = null
 
     fun build(): SubcommandGroupData {
         return SubcommandGroupData(name, description)
             .addSubcommands(subcommands.map { it.build() })
+            .setNameLocalizations(nameLocale?: mapOf())
+            .setDescriptionLocalizations(descriptionLocale?: mapOf())
     }
 
     fun buildHandler(root: String, chunk: CommandHandlerChunk) {
@@ -105,6 +114,8 @@ data class SubCommand(
 
     fun build(): SubcommandData {
         return SubcommandData(name, description)
+            .setNameLocalizations(nameLocale?: mapOf())
+            .setDescriptionLocalizations(descriptionLocale?: mapOf())
             .addOptions(options.map { it.build() })
     }
 }
