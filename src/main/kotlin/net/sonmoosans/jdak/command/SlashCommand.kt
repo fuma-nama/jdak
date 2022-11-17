@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData
 import net.dv8tion.jda.internal.interactions.CommandDataImpl
 import net.sonmoosans.jdak.builder.CommandDsl
+import net.sonmoosans.jdak.event.SlashCommandContext
 import net.sonmoosans.jdak.listener.CommandHandler
 import net.sonmoosans.jdak.listener.CommandHandlerChunk
 import net.sonmoosans.jdak.listener.CommandKey
@@ -24,12 +25,25 @@ open class CommandNode: OptionsContainer {
 
             return {
                 parseOptions(this@CommandNode)
-                handler.invoke(this)
+
+                if (filter(this)) {
+                    handler.invoke(this)
+                }
             }
         }
         private set
 
-    fun onEvent(handler: CommandHandler) {
+    /**
+     * filter events
+     * If false, skip the event
+     */
+    var filter: SlashCommandContext.() -> Boolean = { true }
+
+    fun filterEvent(filter: (@CommandDsl SlashCommandContext).() -> Boolean) {
+        this.filter = filter
+    }
+
+    fun onEvent(handler: (@CommandDsl SlashCommandContext).() -> Unit) {
         this.handler = handler
     }
 }
