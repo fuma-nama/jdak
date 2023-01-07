@@ -1,21 +1,22 @@
 # JDAK - JDA Command Framework in Kotlin
 A Light-Weight, Fast, Flexible, Functional Programming Command framework for [JDA](https://github.com/DV8FromTheWorld/JDA) written in **Kotlin**
+
+- Applications Commands
+- Auto complete
+- Handle interaction events
+
 ## Installation
 Maven
 ```xml
 <dependency>
     <groupId>io.github.sonmoosans</groupId>
     <artifactId>jdak</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.2</version>
 </dependency>
 ```
 Gradle
 ```
-implementation 'io.github.sonmoosans:jdak:1.0.0'
-```
-Gradle Kotlin
-```kotlin
-implementation("io.github.sonmoosans:jdak:1.0.0")
+implementation 'io.github.sonmoosans:jdak:1.1.2'
 ```
 ## Getting Started
 ```kotlin
@@ -73,6 +74,26 @@ slashcommand("test", "debug commands") {
     }
 }
 ```
+
+## Auto Complete
+We have built-in support for auto-complete which allows you to setup auto-complete in few lines of code
+
+```kotlin
+slashcommand("hello", "Say hello") {
+    val text = string("text", "text to send")
+        .autoComplete {
+            mapOf(
+                "Hello" to "World",
+                "Money" to "Shark"
+            )
+        }
+
+    onEvent {
+        event.reply(text.value).queue()
+    }
+}
+```
+
 ## Localizations
 We support localizations for all Application commands
 ```kotlin
