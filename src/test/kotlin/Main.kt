@@ -57,6 +57,12 @@ fun main() {
 
         slashcommand("hello", "Say hello") {
             val text = string("text", "text to send")
+                .autoComplete {
+                    mapOf(
+                        "Hello" to "World",
+                        "Money" to "Shark"
+                    )
+                }
             val size = int("size", "Size of text") {
                 range(min = 0, max = 3)
 

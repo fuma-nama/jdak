@@ -1,6 +1,7 @@
 package net.sonmoosans.jdak.command
 
 import net.dv8tion.jda.api.entities.channel.ChannelType
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.DiscordLocale
 import net.dv8tion.jda.api.interactions.commands.Command.Choice
@@ -101,6 +102,29 @@ open class TypedCommandOption<T : Any?>(
         return this
     }
 
+    fun autoComplete(handler: (CommandAutoCompleteInteractionEvent) -> Map<String, T>): TypedCommandOption<T> {
+        return onAutoComplete {
+            val choices = handler(it)
+
+            it.replyChoices(choices.map { (key, v) ->
+                when (v) {
+                    is Double -> Choice(key, v)
+                    is Float -> Choice(key, v.toDouble())
+                    is Number -> Choice(key, v.toLong())
+                    is String -> Choice(key, v)
+                    else -> error("Unexpected auto complete choice: $v")
+                }
+            }).queue()
+        }
+    }
+
+    open fun onAutoComplete(handler: (CommandAutoCompleteInteractionEvent) -> Unit): TypedCommandOption<T> {
+        autoComplete = true
+        onAutoComplete = handler
+
+        return this
+    }
+
     fun<R> map(map: (T) -> R): TypedCommandOption<R> {
         val prev = this.mapper
         this.mapper = {
@@ -114,15 +138,6 @@ open class TypedCommandOption<T : Any?>(
         val prev = this.mapper
         this.mapper = {
             map(prev(it) as T?)
-        }
-
-        return this as TypedCommandOption<R>
-    }
-
-    fun<T, R> mapSafe(map: (T) -> R): TypedCommandOption<R> {
-        val prev = this.mapper
-        this.mapper = {
-            map(prev(it) as T)
         }
 
         return this as TypedCommandOption<R>
@@ -154,6 +169,7 @@ open class CommandOption(
 ) {
     var required: Boolean = true
     var autoComplete: Boolean = false
+    var onAutoComplete: ((event: CommandAutoCompleteInteractionEvent) -> Unit)? = null
 
     var min: Number? = null
     var max: Number? = null

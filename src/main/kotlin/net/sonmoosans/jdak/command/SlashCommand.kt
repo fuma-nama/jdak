@@ -8,9 +8,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData
 import net.dv8tion.jda.internal.interactions.CommandDataImpl
 import net.sonmoosans.jdak.builder.CommandDsl
 import net.sonmoosans.jdak.event.SlashCommandContext
-import net.sonmoosans.jdak.listener.CommandHandler
-import net.sonmoosans.jdak.listener.CommandHandlerChunk
-import net.sonmoosans.jdak.listener.CommandKey
+import net.sonmoosans.jdak.listener.*
 
 @CommandDsl
 interface CommandGroup {
@@ -18,16 +16,17 @@ interface CommandGroup {
 }
 
 @CommandDsl
-open class CommandNode: OptionsContainer {
+abstract class CommandNode: OptionsContainer {
     var nameLocale: Map<DiscordLocale, String>? = null
     var descriptionLocale: Map<DiscordLocale, String>? = null
     override val options = arrayListOf<CommandOption>()
 
     var handler: CommandHandler? = null
-        get() {
-            val handler = field?: return null
+        private set
 
-            return {
+    fun listen(key: CommandKey, builder: CommandListenerBuilder) {
+        handler?.let { handler ->
+            builder.command(key) {
                 parseOptions(this@CommandNode)
 
                 if (filter(this)) {
@@ -35,7 +34,13 @@ open class CommandNode: OptionsContainer {
                 }
             }
         }
-        private set
+
+        for (option in options) {
+            val handler = option.onAutoComplete?: continue
+
+            builder.autocomplete(AutoCompleteKey(key, option.name), handler)
+        }
+    }
 
     /**
      * filter events
@@ -76,18 +81,19 @@ data class SlashCommand(
             }
     }
 
-    fun buildHandler(chunk: CommandHandlerChunk) {
-        val key = CommandKey(name)
-        handler?.let { chunk[key] = it }
+    fun buildHandler(builder: CommandListenerBuilder) {
+        listen(CommandKey(name), builder)
 
         for (subcommandGroup in subcommandGroups) {
-            subcommandGroup.buildHandler(this.name, chunk)
+            subcommandGroup.buildHandler(this.name, builder)
         }
 
         for (subcommand in subcommands) {
-            val subKey = CommandKey(this.name, subcommand = subcommand.name)
 
-            subcommand.handler?.let { chunk[subKey] = it }
+            subcommand.listen(
+                key = CommandKey(this.name, subcommand = subcommand.name),
+                builder = builder
+            )
         }
     }
 }
@@ -107,11 +113,11 @@ data class SubCommandGroup(
             .setDescriptionLocalizations(descriptionLocale?: mapOf())
     }
 
-    fun buildHandler(root: String, chunk: CommandHandlerChunk) {
+    fun buildHandler(root: String, builder: CommandListenerBuilder) {
         for (subcommand in subcommands) {
             val key = CommandKey(root, group = this.name, subcommand = subcommand.name)
 
-            subcommand.handler?.let { chunk[key] = it }
+            subcommand.listen(key, builder)
         }
     }
 }
