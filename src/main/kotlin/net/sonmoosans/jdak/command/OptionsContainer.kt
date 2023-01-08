@@ -21,11 +21,25 @@ fun OptionsContainer.option(type: OptionType, name: String, description: String)
     CommandOption(name, description, type)
 )
 
+/**
+ * Not recommended, use long instead
+ */
 fun OptionsContainer.int(name: String, description: String) = addOption(
+    NumberCommandOption<Long>(name, description, OptionType.INTEGER)
+        .map { it?.toInt() } as NumberCommandOption<Int>
+)
+
+/**
+ * Not recommended, use long instead
+ */
+fun OptionsContainer.int(name: String, description: String, init: NumberCommandOption<Int>.() -> Unit) =
+    int(name, description).apply(init)
+
+fun OptionsContainer.long(name: String, description: String) = addOption(
     NumberCommandOption<Long>(name, description, OptionType.INTEGER)
 )
 
-fun OptionsContainer.int(name: String, description: String, init: NumberCommandOption<Long>.() -> Unit): TypedCommandOption<Long> = addOption(
+fun OptionsContainer.long(name: String, description: String, init: NumberCommandOption<Long>.() -> Unit) = addOption(
     NumberCommandOption<Long>(name, description, OptionType.INTEGER).apply(init)
 )
 
@@ -33,7 +47,7 @@ fun OptionsContainer.number(name: String, description: String) = addOption(
     NumberCommandOption<Double>(name, description, OptionType.NUMBER)
 )
 
-fun OptionsContainer.number(name: String, description: String, init: NumberCommandOption<Double>.() -> Unit): TypedCommandOption<Double> = addOption(
+fun OptionsContainer.number(name: String, description: String, init: NumberCommandOption<Double>.() -> Unit) = addOption(
     NumberCommandOption<Double>(name, description, OptionType.NUMBER).apply(init)
 )
 
@@ -45,7 +59,7 @@ fun OptionsContainer.string(name: String, description: String) = addOption(
     StringCommandOption<String>(name, description)
 )
 
-fun OptionsContainer.string(name: String, description: String, init: StringCommandOption<String>.() -> Unit): TypedCommandOption<String> = addOption(
+fun OptionsContainer.string(name: String, description: String, init: StringCommandOption<String>.() -> Unit) = addOption(
     StringCommandOption<String>(name, description).apply(init)
 )
 
@@ -65,7 +79,7 @@ fun OptionsContainer.channel(name: String, description: String) = addOption(
     ChannelCommandOption<Channel>(name, description)
 )
 
-fun OptionsContainer.channel(name: String, description: String, init: ChannelCommandOption<Channel>.() -> Unit): ChannelCommandOption<Channel> = addOption(
+fun OptionsContainer.channel(name: String, description: String, init: ChannelCommandOption<Channel>.() -> Unit) = addOption(
     ChannelCommandOption<Channel>(name, description).apply(init)
 )
 
