@@ -5,34 +5,22 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.sonmoosans.jdak.builder.CommandBuilder
 import net.sonmoosans.jdak.listener.CommandListener
+import net.sonmoosans.jdak.listener.CommandListenerBuilderImpl
 
 data class CommandsBuild(
-    val slashCommands: List<CommandData>,
-    val userCommands: List<CommandData>,
-    val messageCommands: List<CommandData>,
+    val commands: List<CommandData>,
     val listener: CommandListener
 )
 
 object JDAK {
     fun build(init: CommandBuilder.() -> Unit): CommandsBuild {
         val builder = CommandBuilder().apply(init)
-        val listener = CommandListener()
+        val commands = arrayListOf<CommandData>()
+        val listener = CommandListenerBuilderImpl()
 
-        for (command in builder.slashcommands) {
-            command.buildHandler(listener)
-        }
-        for (command in builder.userCommands) {
-            listener.users[command.name] = command.handler
-        }
-        for (command in builder.messageCommands) {
-            listener.messages[command.name] = command.handler
-        }
+        builder.buildTo(commands, listener)
 
-        val slashCommands = builder.slashcommands.map { it.build() }
-        val userCommands = builder.userCommands.map { it.build() }
-        val messageCommands = builder.messageCommands.map { it.build() }
-
-        return CommandsBuild(slashCommands, userCommands, messageCommands, listener)
+        return CommandsBuild(commands, listener.build())
     }
 
     fun guilds(jda: JDA, guilds: List<Guild>, init: CommandBuilder.() -> Unit) {
@@ -40,9 +28,7 @@ object JDAK {
 
         for (guild in guilds) {
             guild.updateCommands()
-                .addCommands(data.slashCommands)
-                .addCommands(data.userCommands)
-                .addCommands(data.messageCommands)
+                .addCommands(data.commands)
                 .queue()
         }
 
@@ -53,9 +39,7 @@ object JDAK {
         val data = build(init)
 
         jda.updateCommands()
-            .addCommands(data.slashCommands)
-            .addCommands(data.userCommands)
-            .addCommands(data.messageCommands)
+            .addCommands(data.commands)
             .queue()
 
         jda.addEventListener(data.listener)

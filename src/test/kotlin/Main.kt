@@ -6,7 +6,7 @@ import net.sonmoosans.jdak.JDAK
 import net.sonmoosans.jdak.builder.CommandBuilder
 import net.sonmoosans.jdak.builder.group
 import net.sonmoosans.jdak.builder.subcommand
-import net.sonmoosans.jdak.command.int
+import net.sonmoosans.jdak.command.long
 import net.sonmoosans.jdak.command.string
 import net.sonmoosans.jdak.command.user
 
@@ -37,22 +37,23 @@ fun main() {
             }
         }
 
-        slashcommand("test", "debug commands") {
-            nameLocale = mapOf(
-                DiscordLocale.CHINESE_TAIWAN to "測試"
-            )
-            guildOnly = true
+        //Define a middleware
+        middleware({ event, next ->
+            val member = event.member
 
-            group("beta", "Beta features") {
-                subcommand("kill", "Kill someone") {
-                    val target = user("target", "The target to kill")
+            if (member == null) {
+                println("Outside of guild")
+            } else if (member.permissions.contains(Permission.ADMINISTRATOR)) {
+                println("Are you admin!")
+            } else {
+                println("Ignored event")
 
-                    onEvent {
-                        event.reply("Killed ${target.value.asMention}")
-                            .queue()
-                    }
-                }
+                return@middleware
             }
+
+            next()
+        }) {
+            protectedCommands()
         }
 
         slashcommand("hello", "Say hello") {
@@ -63,39 +64,43 @@ fun main() {
                         "Money" to "Shark"
                     )
                 }
-            val size = int("size", "Size of text") {
-                range(min = 0, max = 3)
-
-                choices(
+            val size = long("size", "Size of text")
+                .range(min = 0, max = 3)
+                .choices(
                     "xl" to 2,
                     "lg" to 1,
                 )
-
-                mapNullable {
-                    it?.toInt()
-                }
-            }.optional()
+                .optional()
 
             onEvent {
                 event.reply("${text.value} in size of ${size.value}")
                     .queue()
             }
         }
-
-        gameCommands()
     }
 }
 
 //you can split the builder into multi functions
-fun CommandBuilder.gameCommands() = slashcommand("game", "Games commands") {
-    val something = int("something", "No description")
+fun CommandBuilder.protectedCommands() = slashcommand("protected", "protected commands") {
+    nameLocale = mapOf(
+        DiscordLocale.CHINESE_TAIWAN to "測試"
+    )
+    guildOnly = true
 
-    //the event won't be replied if 'something' is 0
-    filterEvent {
-        something.value != 0L
-    }
+    group("beta", "Beta features") {
+        subcommand("kill", "Kill someone") {
+            val target = user("target", "The target to kill")
 
-    onEvent {
-        event.reply("result: ${something.value}").queue()
+            onEvent {
+                event.reply("Killed ${target.value.asMention}").queue()
+            }
+        }
+
+        subcommand("hello", "Say hello") {
+
+            onEvent {
+                event.reply("hello").queue()
+            }
+        }
     }
 }

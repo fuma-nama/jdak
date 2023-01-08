@@ -11,12 +11,7 @@ import net.sonmoosans.jdak.event.SlashCommandContext
 import net.sonmoosans.jdak.listener.*
 
 @CommandDsl
-interface CommandGroup {
-    val subcommands: MutableList<SubCommand>
-}
-
-@CommandDsl
-abstract class CommandNode: OptionsContainer {
+abstract class CommandRoute: OptionsContainer, CommandNode {
     var nameLocale: Map<DiscordLocale, String>? = null
     var descriptionLocale: Map<DiscordLocale, String>? = null
     override val options = arrayListOf<CommandOption>()
@@ -24,10 +19,10 @@ abstract class CommandNode: OptionsContainer {
     var handler: CommandHandler? = null
         private set
 
-    fun listen(key: CommandKey, builder: CommandListenerBuilder) {
+    override fun listen(key: CommandKey, builder: CommandListenerBuilder) {
         handler?.let { handler ->
             builder.command(key) {
-                parseOptions(this@CommandNode)
+                parseOptions(this@CommandRoute)
 
                 if (filter(this)) {
                     handler.invoke(this)
@@ -60,11 +55,12 @@ abstract class CommandNode: OptionsContainer {
 data class SlashCommand(
     val name: String,
     val description: String,
-): CommandNode(), ApplicationCommand, CommandGroup {
+): CommandRoute(), ApplicationCommand, CommandGroup {
     override val subcommands = arrayListOf<SubCommand>()
-    val subcommandGroups = arrayListOf<SubCommandGroup>()
     override var guildOnly: Boolean = false
     override var permissions: DefaultMemberPermissions? = null
+
+    val subcommandGroups = arrayListOf<SubCommandGroup>()
 
     override fun build(): CommandData {
         return CommandDataImpl(name, description)
@@ -81,17 +77,20 @@ data class SlashCommand(
             }
     }
 
-    fun buildHandler(builder: CommandListenerBuilder) {
-        listen(CommandKey(name), builder)
+    override fun listen(builder: CommandListenerBuilder) {
+        listen(
+            key = CommandKey(this.name),
+            builder
+        )
+    }
+
+    override fun listen(key: CommandKey, builder: CommandListenerBuilder) {
+        super<CommandRoute>.listen(key, builder)
+        super<CommandGroup>.listen(key, builder)
 
         for (subcommandGroup in subcommandGroups) {
-            subcommandGroup.buildHandler(this.name, builder)
-        }
-
-        for (subcommand in subcommands) {
-
-            subcommand.listen(
-                key = CommandKey(this.name, subcommand = subcommand.name),
+            subcommandGroup.listen(
+                key = CommandKey(key.name, group = subcommandGroup.name),
                 builder = builder
             )
         }
@@ -112,20 +111,12 @@ data class SubCommandGroup(
             .setNameLocalizations(nameLocale?: mapOf())
             .setDescriptionLocalizations(descriptionLocale?: mapOf())
     }
-
-    fun buildHandler(root: String, builder: CommandListenerBuilder) {
-        for (subcommand in subcommands) {
-            val key = CommandKey(root, group = this.name, subcommand = subcommand.name)
-
-            subcommand.listen(key, builder)
-        }
-    }
 }
 
 data class SubCommand(
     val name: String,
     val description: String,
-): CommandNode() {
+): CommandRoute() {
 
     fun build(): SubcommandData {
         return SubcommandData(name, description)
@@ -133,4 +124,22 @@ data class SubCommand(
             .setDescriptionLocalizations(descriptionLocale?: mapOf())
             .addOptions(options.map { it.build() })
     }
+}
+
+@CommandDsl
+interface CommandGroup: CommandNode {
+    val subcommands: MutableList<SubCommand>
+
+    override fun listen(key: CommandKey, builder: CommandListenerBuilder) {
+        for (subcommand in subcommands) {
+            subcommand.listen(
+                key = CommandKey(key.name, group = key.group, subcommand = subcommand.name),
+                builder = builder
+            )
+        }
+    }
+}
+
+interface CommandNode {
+    fun listen(key: CommandKey, builder: CommandListenerBuilder)
 }

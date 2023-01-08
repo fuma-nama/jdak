@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.internal.interactions.CommandDataImpl
+import net.sonmoosans.jdak.listener.CommandListenerBuilder
 
 sealed class ContextCommand(val name: String, val type: Command.Type): ApplicationCommand {
     var nameLocalizations: Map<DiscordLocale, String>? = null
@@ -35,6 +36,10 @@ class MessageContextCommand(name: String): ContextCommand(name, Command.Type.MES
     fun onEvent(handler: (event: MessageContextInteractionEvent) -> Unit) {
         this.handler = handler
     }
+
+    override fun listen(builder: CommandListenerBuilder) {
+        builder.messagecommand(this.name, handler)
+    }
 }
 
 class UserContextCommand(name: String): ContextCommand(name, Command.Type.USER) {
@@ -42,5 +47,9 @@ class UserContextCommand(name: String): ContextCommand(name, Command.Type.USER) 
 
     fun onEvent(handler: (event: UserContextInteractionEvent) -> Unit) {
         this.handler = handler
+    }
+
+    override fun listen(builder: CommandListenerBuilder) {
+        builder.usercommand(this.name, handler)
     }
 }

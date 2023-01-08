@@ -9,6 +9,9 @@ import net.sonmoosans.jdak.event.SlashCommandContext
 
 typealias CommandHandler = SlashCommandContext.() -> Unit
 typealias AutoCompleteHandler = (CommandAutoCompleteInteractionEvent) -> Unit
+typealias MessageCommandHandler = (MessageContextInteractionEvent) -> Unit
+typealias UserCommandHandler = (UserContextInteractionEvent) -> Unit
+
 data class CommandKey(
     val name: String, val group: String? = null, val subcommand: String? = null
 )
@@ -17,11 +20,12 @@ data class AutoCompleteKey(
     val command: CommandKey, val option: String
 )
 
-class CommandListener: ListenerAdapter(), CommandListenerBuilder {
-    val slash: HashMap<CommandKey, CommandHandler> = hashMapOf()
-    val users = hashMapOf<String, (UserContextInteractionEvent) -> Unit>()
-    val messages = hashMapOf<String, (MessageContextInteractionEvent) -> Unit>()
-    val autoCompletes = hashMapOf<AutoCompleteKey, (CommandAutoCompleteInteractionEvent) -> Unit>()
+class CommandListener(
+    val slash: Map<CommandKey, CommandHandler>,
+    val users: Map<String, UserCommandHandler>,
+    val messages: Map<String, MessageCommandHandler>,
+    val autoCompletes: Map<AutoCompleteKey, AutoCompleteHandler>
+): ListenerAdapter() {
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         val key = CommandKey(event.name, event.subcommandGroup, event.subcommandName)
@@ -45,13 +49,5 @@ class CommandListener: ListenerAdapter(), CommandListenerBuilder {
         )
 
         autoCompletes[key]?.invoke(event)
-    }
-
-    override fun command(key: CommandKey, handler: CommandHandler) {
-        slash[key] = handler
-    }
-
-    override fun autocomplete(key: AutoCompleteKey, handler: AutoCompleteHandler) {
-        autoCompletes[key] = handler
     }
 }
