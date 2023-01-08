@@ -125,19 +125,25 @@ open class TypedCommandOption<T : Any?>(
         return this
     }
 
-    fun<R> map(map: (T) -> R): TypedCommandOption<R> {
+    /**
+     * Map value, allows null value
+     */
+    fun<R> map(map: (T?) -> R): TypedCommandOption<R> {
         val prev = this.mapper
         this.mapper = {
-            map(prev(it) as T)
+            map(prev(it) as T?)
         }
 
         return this as TypedCommandOption<R>
     }
 
-    fun<R> mapNullable(map: (T?) -> R): TypedCommandOption<R> {
+    /**
+     * Map value, throw error if value is null
+     */
+    fun<R> mapNonnull(map: (T) -> R): TypedCommandOption<R> {
         val prev = this.mapper
         this.mapper = {
-            map(prev(it) as T?)
+            map((prev(it) as T?)!!)
         }
 
         return this as TypedCommandOption<R>

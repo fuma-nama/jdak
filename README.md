@@ -1,9 +1,10 @@
 # JDAK - JDA Command Framework in Kotlin
 A Light-Weight, Fast, Flexible, Functional Programming Command framework for [JDA](https://github.com/DV8FromTheWorld/JDA) written in **Kotlin**
 
-- Applications Commands
-- Auto complete
-- Handle interaction events
+- High performance
+- Support all Application Commands
+- Auto complete, Middlewares and more!
+- Functional Programming style
 
 ## Installation
 Maven
@@ -11,12 +12,12 @@ Maven
 <dependency>
     <groupId>io.github.sonmoosans</groupId>
     <artifactId>jdak</artifactId>
-    <version>1.1.2</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 Gradle
 ```
-implementation 'io.github.sonmoosans:jdak:1.1.2'
+implementation 'io.github.sonmoosans:jdak:1.2.0'
 ```
 ## Getting Started
 ```kotlin
@@ -111,6 +112,32 @@ slashcommand("test", "debug commands") {
     }
 }
 ```
+
+## Middleware
+Middleware can be used to check for permissions when the user uses specified commands <br>
+It allows you to control the event handler for each command
+
+```kotlin
+//Check if the bot has admin permissions
+middleware({ event, next ->
+    val member = event.member
+
+    if (member == null) {
+        println("Outside of guild")
+    } else if (member.permissions.contains(Permission.ADMINISTRATOR)) {
+        println("Are you admin!")
+    } else {
+        println("Ignore event: Missing permissions")
+
+        return@middleware
+    }
+
+    next() //call the next handler
+}) {
+    protectedCommands()
+}
+```
+
 ## Permissions
 JDAK also supports to set `guildOnly` and `permissions` options
 ```kotlin
